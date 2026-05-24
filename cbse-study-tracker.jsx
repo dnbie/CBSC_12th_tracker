@@ -651,41 +651,45 @@ function AuthScreen({
   authError,
 }) {
   return (
-    <div style={{ minHeight: "100vh", display: "grid", placeItems: "center", padding: 20, background: "linear-gradient(180deg, #0f172a 0%, #111827 45%, #f8fafc 45%, #f8fafc 100%)" }}>
-      <div style={{ width: "min(100%, 980px)", display: "grid", gridTemplateColumns: "1.1fr 0.9fr", gap: 18 }}>
-        <div style={{ padding: 28, borderRadius: 24, background: "linear-gradient(135deg, #111827 0%, #1e293b 100%)", color: "#fff", boxShadow: "0 30px 80px rgba(15, 23, 42, 0.35)" }}>
-          <div style={{ fontSize: 12, letterSpacing: 2, textTransform: "uppercase", color: "#94a3b8", marginBottom: 10 }}>CBSE Study Tracker</div>
-          <h1 style={{ fontSize: 44, lineHeight: 1.05, margin: 0, maxWidth: 9 }}>Sign in and sync your progress everywhere.</h1>
-          <p style={{ marginTop: 14, fontSize: 15, lineHeight: 1.7, color: "#cbd5e1", maxWidth: 560 }}>
-            This version uses Supabase for login, database storage, and realtime updates so the same study progress appears across devices.
+    <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", padding: 20, background: "#e8eef5" }}>
+      <div style={{ width: "min(100%, 900px)", display: "grid", gridTemplateColumns: "minmax(280px, 1fr) minmax(280px, 0.95fr)", gap: 28 }}>
+        <div style={{ padding: 40, borderRadius: 28, background: "#e8eef5", boxShadow: "8px 8px 16px #c5cee1, -8px -8px 16px #ffffff", color: "#2c3e50" }}>
+          <div style={{ fontSize: 11, letterSpacing: 2.5, textTransform: "uppercase", color: "#7a8fa6", marginBottom: 16, fontWeight: 800 }}>CBSE Study Tracker</div>
+          <h1 style={{ fontSize: 36, lineHeight: 1.2, margin: 0, maxWidth: 320, fontWeight: 800, color: "#2c3e50" }}>Track Your Progress</h1>
+          <p style={{ marginTop: 16, fontSize: 14, lineHeight: 1.8, color: "#5a6f8a", maxWidth: 520 }}>
+            Sign in to track and sync your CBSE study progress across all your devices in real time.
           </p>
-          <div style={{ display: "grid", gap: 10, marginTop: 22 }}>
+          <div style={{ display: "grid", gap: 12, marginTop: 28 }}>
             {[
-              "Email/password authentication",
-              "Realtime progress and activity sync",
-              "Deploy-ready on Vercel or any static host",
+              "Secure login",
+              "Real-time sync",
+              "Track progress",
             ].map((item) => (
-              <div key={item} style={{ display: "flex", gap: 10, alignItems: "center", color: "#e2e8f0", fontSize: 14 }}>
-                <span style={{ width: 8, height: 8, borderRadius: 999, background: "#38bdf8", flexShrink: 0 }} />
+              <div key={item} style={{ display: "flex", gap: 12, alignItems: "center", color: "#5a6f8a", fontSize: 13, fontWeight: 500 }}>
+                <span style={{ width: 8, height: 8, borderRadius: "50%", background: "#4B70E2", flexShrink: 0 }} />
                 <span>{item}</span>
               </div>
             ))}
           </div>
         </div>
 
-        <div style={{ padding: 28, borderRadius: 24, background: "var(--card-bg)", border: "1px solid var(--border)", boxShadow: "0 20px 50px rgba(15, 23, 42, 0.08)" }}>
-          <div style={{ display: "flex", gap: 8, marginBottom: 18 }}>
+        <div style={{ padding: 40, borderRadius: 28, background: "#e8eef5", boxShadow: "8px 8px 20px #c5cee1, -8px -8px 20px #ffffff", transition: "all 0.3s ease" }}>
+          <div style={{ display: "flex", gap: 12, marginBottom: 24 }}>
             <button
               type="button"
               onClick={() => setAuthMode("signIn")}
               style={{
                 flex: 1,
                 border: "none",
-                borderRadius: 12,
-                padding: "11px 14px",
-                background: authMode === "signIn" ? "#0f172a" : "var(--border)",
-                color: authMode === "signIn" ? "#fff" : "var(--text-secondary)",
+                borderRadius: 16,
+                padding: "12px 16px",
+                background: authMode === "signIn" ? "#4B70E2" : "#e8eef5",
+                color: authMode === "signIn" ? "#fff" : "#7a8fa6",
                 fontWeight: 700,
+                fontSize: 13,
+                cursor: "pointer",
+                transition: "all 0.3s ease",
+                boxShadow: authMode === "signIn" ? "0 4px 12px rgba(75, 112, 226, 0.3)" : "inset 3px 3px 8px #c5cee1, inset -3px -3px 8px #ffffff",
               }}
             >
               Sign in
@@ -696,43 +700,69 @@ function AuthScreen({
               style={{
                 flex: 1,
                 border: "none",
-                borderRadius: 12,
-                padding: "11px 14px",
-                background: authMode === "signUp" ? "#0f172a" : "var(--border)",
-                color: authMode === "signUp" ? "#fff" : "var(--text-secondary)",
+                borderRadius: 16,
+                padding: "12px 16px",
+                background: authMode === "signUp" ? "#4B70E2" : "#e8eef5",
+                color: authMode === "signUp" ? "#fff" : "#7a8fa6",
                 fontWeight: 700,
+                fontSize: 13,
+                cursor: "pointer",
+                transition: "all 0.3s ease",
+                boxShadow: authMode === "signUp" ? "0 4px 12px rgba(75, 112, 226, 0.3)" : "inset 3px 3px 8px #c5cee1, inset -3px -3px 8px #ffffff",
               }}
             >
               Create account
             </button>
           </div>
 
-          <form onSubmit={onSubmit} style={{ display: "grid", gap: 12 }}>
-            <label style={{ display: "grid", gap: 6, fontSize: 13, fontWeight: 600, color: "var(--text)" }}>
+          <form onSubmit={onSubmit} style={{ display: "grid", gap: 14 }}>
+            <label style={{ display: "grid", gap: 8, fontSize: 12, fontWeight: 700, color: "#5a6f8a" }}>
               Email
               <input
                 type="email"
                 value={email}
                 onChange={(event) => setEmail(event.target.value)}
                 placeholder="you@example.com"
-                style={{ padding: "12px 14px", borderRadius: 12, border: "1px solid var(--border)", background: "var(--bg)", color: "var(--text)", fontSize: 14 }}
-                required
+                style={{
+                  padding: "14px 16px",
+                  borderRadius: 14,
+                  border: "none",
+                  background: "#e8eef5",
+                  color: "#2c3e50",
+                  fontSize: 13,
+                  boxShadow: "inset 4px 4px 10px #c5cee1, inset -4px -4px 10px #ffffff",
+                  transition: "all 0.3s ease",
+                  outline: "none",
+                }}
+                onFocus={(e) => (e.target.style.boxShadow = "inset 4px 4px 10px #c5cee1, inset -4px -4px 10px #ffffff, 0 0 0 3px rgba(75, 112, 226, 0.1)")}
+                onBlur={(e) => (e.target.style.boxShadow = "inset 4px 4px 10px #c5cee1, inset -4px -4px 10px #ffffff")}
               />
             </label>
-            <label style={{ display: "grid", gap: 6, fontSize: 13, fontWeight: 600, color: "var(--text)" }}>
+            <label style={{ display: "grid", gap: 8, fontSize: 12, fontWeight: 700, color: "#5a6f8a" }}>
               Password
               <input
                 type="password"
                 value={password}
                 onChange={(event) => setPassword(event.target.value)}
                 placeholder="••••••••"
-                style={{ padding: "12px 14px", borderRadius: 12, border: "1px solid var(--border)", background: "var(--bg)", color: "var(--text)", fontSize: 14 }}
-                required
+                style={{
+                  padding: "14px 16px",
+                  borderRadius: 14,
+                  border: "none",
+                  background: "#e8eef5",
+                  color: "#2c3e50",
+                  fontSize: 13,
+                  boxShadow: "inset 4px 4px 10px #c5cee1, inset -4px -4px 10px #ffffff",
+                  transition: "all 0.3s ease",
+                  outline: "none",
+                }}
+                onFocus={(e) => (e.target.style.boxShadow = "inset 4px 4px 10px #c5cee1, inset -4px -4px 10px #ffffff, 0 0 0 3px rgba(75, 112, 226, 0.1)")}
+                onBlur={(e) => (e.target.style.boxShadow = "inset 4px 4px 10px #c5cee1, inset -4px -4px 10px #ffffff")}
               />
             </label>
 
             {authError ? (
-              <div style={{ padding: 12, borderRadius: 12, background: "#fef2f2", color: "#b91c1c", fontSize: 13, lineHeight: 1.5 }}>
+              <div style={{ padding: 14, borderRadius: 14, background: "#ffe8e8", color: "#c41e1e", fontSize: 12, lineHeight: 1.6, fontWeight: 500 }}>
                 {authError}
               </div>
             ) : null}
@@ -742,21 +772,27 @@ function AuthScreen({
               disabled={authLoading}
               style={{
                 border: "none",
-                borderRadius: 12,
-                padding: "13px 16px",
-                background: authLoading ? "#94a3b8" : "#2563eb",
+                borderRadius: 14,
+                padding: "14px 16px",
+                background: authLoading ? "#a8c5f0" : "#4B70E2",
                 color: "#fff",
                 fontWeight: 800,
-                fontSize: 14,
+                fontSize: 13,
+                cursor: authLoading ? "not-allowed" : "pointer",
+                transition: "all 0.3s ease",
+                boxShadow: "0 6px 16px rgba(75, 112, 226, 0.35)",
+                transform: "translateY(0)",
               }}
+              onMouseDown={(e) => (e.currentTarget.style.transform = "translateY(2px)")}
+              onMouseUp={(e) => (e.currentTarget.style.transform = "translateY(0)")}
             >
               {authLoading ? "Working..." : authMode === "signIn" ? "Sign in" : "Create account"}
             </button>
           </form>
 
           {!SUPABASE_READY ? (
-            <div style={{ marginTop: 14, padding: 14, borderRadius: 14, background: "#fff7ed", color: "#9a3412", fontSize: 13, lineHeight: 1.6 }}>
-              Supabase env vars are not set yet, so realtime auth is not active. You can still open demo mode to test the UI, but database sync starts once <code>VITE_SUPABASE_URL</code> and <code>VITE_SUPABASE_ANON_KEY</code> are configured.
+            <div style={{ marginTop: 16, padding: 14, borderRadius: 14, background: "#fef5e8", color: "#8b5c00", fontSize: 12, lineHeight: 1.6 }}>
+              Supabase env vars not set. Try demo mode or configure <code style={{ fontFamily: "monospace", fontSize: 11 }}>VITE_SUPABASE_URL</code> and <code style={{ fontFamily: "monospace", fontSize: 11 }}>VITE_SUPABASE_ANON_KEY</code>.
             </div>
           ) : null}
 
@@ -765,15 +801,21 @@ function AuthScreen({
               type="button"
               onClick={onDemoMode}
               style={{
-                marginTop: 12,
+                marginTop: 14,
                 width: "100%",
-                border: "1px solid var(--border)",
-                borderRadius: 12,
-                padding: "12px 16px",
-                background: "transparent",
-                color: "var(--text)",
+                border: "none",
+                borderRadius: 14,
+                padding: "13px 16px",
+                background: "#e8eef5",
+                color: "#4B70E2",
                 fontWeight: 700,
+                fontSize: 13,
+                cursor: "pointer",
+                transition: "all 0.3s ease",
+                boxShadow: "inset 3px 3px 8px #c5cee1, inset -3px -3px 8px #ffffff",
               }}
+              onMouseEnter={(e) => (e.currentTarget.style.boxShadow = "0 4px 12px rgba(75, 112, 226, 0.2)")}
+              onMouseLeave={(e) => (e.currentTarget.style.boxShadow = "inset 3px 3px 8px #c5cee1, inset -3px -3px 8px #ffffff")}
             >
               Continue in demo mode
             </button>
