@@ -650,176 +650,495 @@ function AuthScreen({
   authLoading,
   authError,
 }) {
+  const isSignIn = authMode === "signIn";
+
+  const handleSignInSubmit = (event) => {
+    if (!isSignIn) setAuthMode("signIn");
+    onSubmit(event);
+  };
+
+  const handleSignUpSubmit = (event) => {
+    if (isSignIn) setAuthMode("signUp");
+    onSubmit(event);
+  };
+
   return (
-    <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", padding: 20, background: "#e8eef5" }}>
-      <div style={{ width: "min(100%, 900px)", display: "grid", gridTemplateColumns: "minmax(280px, 1fr) minmax(280px, 0.95fr)", gap: 28 }}>
-        <div style={{ padding: 40, borderRadius: 28, background: "#e8eef5", boxShadow: "8px 8px 16px #c5cee1, -8px -8px 16px #ffffff", color: "#2c3e50" }}>
-          <div style={{ fontSize: 11, letterSpacing: 2.5, textTransform: "uppercase", color: "#7a8fa6", marginBottom: 16, fontWeight: 800 }}>CBSE Study Tracker</div>
-          <h1 style={{ fontSize: 36, lineHeight: 1.2, margin: 0, maxWidth: 320, fontWeight: 800, color: "#2c3e50" }}>Track Your Progress</h1>
-          <p style={{ marginTop: 16, fontSize: 14, lineHeight: 1.8, color: "#5a6f8a", maxWidth: 520 }}>
-            Sign in to track and sync your CBSE study progress across all your devices in real time.
-          </p>
-          <div style={{ display: "grid", gap: 12, marginTop: 28 }}>
-            {[
-              "Secure login",
-              "Real-time sync",
-              "Track progress",
-            ].map((item) => (
-              <div key={item} style={{ display: "flex", gap: 12, alignItems: "center", color: "#5a6f8a", fontSize: 13, fontWeight: 500 }}>
-                <span style={{ width: 8, height: 8, borderRadius: "50%", background: "#4B70E2", flexShrink: 0 }} />
-                <span>{item}</span>
-              </div>
-            ))}
-          </div>
+    <div className="model-auth-page">
+      <style>{`
+        .model-auth-page, .model-auth-page * { box-sizing: border-box; }
+        .model-auth-page {
+          --model-ui-scale: 0.8;
+          min-height: 100vh;
+          width: 100%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding: 10px;
+          background-color: #f5f3e8;
+          font-family: "Montserrat", sans-serif;
+          color: #a0a5a8;
+          overflow: auto;
+        }
+        .model-main {
+          position: relative;
+          width: min(1140px, 100%);
+          min-height: 620px;
+          height: min(700px, calc(100vh - 24px));
+          padding: 25px;
+          background-color: #f5f3e8;
+          box-shadow: 10px 10px 20px #d8d3c0, -10px -10px 20px #fffef8;
+          border-radius: 14px;
+          overflow: hidden;
+          transform: scale(var(--model-ui-scale));
+          transform-origin: center center;
+        }
+        .model-container {
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          position: absolute;
+          top: 0;
+          width: 62%;
+          height: 100%;
+          padding: 25px;
+          background-color: #f5f3e8;
+          transition: 1.25s;
+        }
+        .model-form {
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          flex-direction: column;
+          width: 100%;
+          max-width: 620px;
+          height: 100%;
+          margin: 0 auto;
+        }
+        .model-title {
+          font-size: clamp(42px, 4.2vw, 56px);
+          font-weight: 800;
+          line-height: 1.1;
+          color: #182c4b;
+          margin-bottom: 24px;
+          text-align: center;
+        }
+        .model-sub {
+          margin-bottom: 14px;
+          font-size: 14px;
+          color: #63738a;
+          line-height: 1.55;
+          width: 100%;
+          text-align: center;
+        }
+        .model-icons {
+          display: flex;
+          gap: 12px;
+          margin-bottom: 14px;
+        }
+        .model-icon {
+          width: 38px;
+          height: 38px;
+          border-radius: 999px;
+          border: 2px solid #7f7f7a;
+          color: #7f7f7a;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 22px;
+          font-weight: 700;
+          line-height: 1;
+        }
+        .model-form-note {
+          font-size: 12px;
+          color: #9aa3b1;
+          margin-bottom: 10px;
+          text-align: center;
+        }
+        .model-input {
+          width: 100%;
+          height: clamp(48px, 3.1vw, 54px);
+          margin: 6px 0;
+          padding-left: 24px;
+          font-size: 15px;
+          border: none;
+          outline: none;
+          font-family: "Montserrat", sans-serif;
+          background-color: #f5f3e8;
+          color: #243f64;
+          border-radius: 12px;
+          box-shadow: inset 2px 2px 4px #d8d3c0, inset -2px -2px 4px #fffef8;
+        }
+        .model-input::placeholder {
+          color: #7e8b99;
+          opacity: 1;
+        }
+        .model-input-first {
+          margin-top: 4px;
+        }
+        .model-input:focus {
+          box-shadow: inset 4px 4px 6px #d8d3c0, inset -4px -4px 6px #fffef8, 0 0 0 2px rgba(75, 112, 226, 0.18);
+        }
+        .model-button {
+          width: clamp(220px, 17vw, 240px);
+          height: clamp(54px, 4.8vw, 62px);
+          border-radius: 32px;
+          margin-top: 24px;
+          font-weight: 700;
+          font-size: clamp(14px, 1.1vw, 15px);
+          letter-spacing: 1.15px;
+          background-color: #4B70E2;
+          color: #fff;
+          box-shadow: 8px 8px 16px #d8d3c0, -8px -8px 16px #fffef8;
+          border: none;
+          cursor: pointer;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          text-align: center;
+          line-height: 1.1;
+          transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .model-button:hover { transform: translateY(-1px); }
+        .model-button:active {
+          transform: translateY(1px);
+          box-shadow: 4px 4px 10px #d8d3c0, -4px -4px 10px #fffef8;
+        }
+        .model-button:disabled {
+          opacity: 0.7;
+          cursor: not-allowed;
+          transform: none;
+        }
+        .model-error {
+          width: 100%;
+          margin-top: 8px;
+          padding: 10px 12px;
+          border-radius: 10px;
+          background: #fde9df;
+          color: #a8441d;
+          font-size: 12px;
+          line-height: 1.45;
+        }
+        .model-demo {
+          width: 100%;
+          margin-top: 8px;
+          font-size: 12px;
+          line-height: 1.5;
+          color: #6b7280;
+        }
+        .model-demo-btn {
+          margin-top: 10px;
+          width: clamp(220px, 17vw, 240px);
+          height: 40px;
+          border: none;
+          border-radius: 20px;
+          background: #f5f3e8;
+          color: #4B70E2;
+          font-size: 12px;
+          font-weight: 700;
+          cursor: pointer;
+          box-shadow: inset 2px 2px 4px #d8d3c0, inset -2px -2px 4px #fffef8;
+        }
+        .model-a-container {
+          z-index: 100;
+          left: 38%;
+        }
+        .model-b-container {
+          left: 38%;
+          z-index: 0;
+        }
+        .model-switch {
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          position: absolute;
+          top: 0;
+          left: 0;
+          height: 100%;
+          width: 38%;
+          padding: 50px;
+          z-index: 200;
+          transition: 1.25s;
+          background-color: #f5f3e8;
+          overflow: hidden;
+          box-shadow: 4px 4px 12px #d8d3c0, -4px -4px 12px #fffef8;
+        }
+        .model-switch-circle {
+          position: absolute;
+          width: 420px;
+          height: 420px;
+          border-radius: 50%;
+          background-color: #f5f3e8;
+          box-shadow: inset 5px 5px 10px #e2ddcc, inset -5px -5px 10px #fffef8;
+          opacity: 0.45;
+          bottom: -52%;
+          left: -48%;
+          transition: 1.25s;
+        }
+        .model-switch-circle-t {
+          top: -22%;
+          left: 54%;
+          width: 300px;
+          height: 300px;
+        }
+        .model-switch-container {
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          flex-direction: column;
+          position: absolute;
+          width: 100%;
+          padding: 50px 55px;
+          transition: 1.25s;
+          text-align: center;
+        }
+        .model-brand {
+          font-size: 13px;
+          letter-spacing: 1.4px;
+          color: #4B70E2;
+          font-weight: 800;
+          text-transform: uppercase;
+        }
+        .model-switch-title {
+          font-size: clamp(42px, 4.4vw, 56px);
+          font-weight: 800;
+          line-height: 1.2;
+          color: #182c4b;
+          margin: 14px 0 12px;
+        }
+        .model-switch-description {
+          font-size: 14px;
+          letter-spacing: 0.2px;
+          text-align: center;
+          line-height: 1.6;
+          color: #63738a;
+        }
+        .model-switch-button { margin-top: 28px; }
+        .is-txr {
+          left: 62%;
+          transition: 1.25s;
+          transform-origin: left;
+        }
+        .model-link {
+          color: #20232c;
+          font-size: 16px;
+          margin-top: 16px;
+          border-bottom: 1px solid #a0a5a8;
+          line-height: 1.8;
+          text-decoration: none;
+        }
+        .is-txl {
+          left: 0;
+          transition: 1.25s;
+          transform-origin: right;
+        }
+        .is-z200 {
+          z-index: 200;
+          transition: 1.25s;
+        }
+        .is-hidden {
+          visibility: hidden;
+          opacity: 0;
+          position: absolute;
+          transition: 1.25s;
+        }
+        @media (max-width: 1024px) {
+          .model-auth-page { --model-ui-scale: 0.9; }
+          .model-main { height: 660px; }
+          .model-container { width: 62%; }
+          .model-a-container, .model-b-container { left: 38%; }
+          .model-switch { width: 38%; }
+          .is-txr { left: 62%; }
+          .model-title { font-size: 42px; }
+          .model-switch-title { font-size: 42px; }
+          .model-sub, .model-switch-description { font-size: 14px; }
+        }
+        @media (max-width: 860px) {
+          .model-auth-page { --model-ui-scale: 1; }
+          .model-main {
+            height: auto;
+            min-height: 760px;
+            padding: 18px;
+            transform: none;
+          }
+          .model-container {
+            position: relative;
+            width: 100%;
+            left: 0;
+            min-height: 420px;
+            height: auto;
+            padding: 16px;
+          }
+          .model-a-container,
+          .model-b-container,
+          .model-a-container.is-txl,
+          .model-b-container.is-txl,
+          .model-b-container.is-z200 {
+            left: 0;
+            z-index: auto;
+          }
+          .model-a-container { display: ${isSignIn ? "none" : "flex"}; }
+          .model-b-container { display: ${isSignIn ? "flex" : "none"}; }
+          .model-switch {
+            position: relative;
+            width: 100%;
+            min-height: 280px;
+            left: 0;
+            margin-top: 6px;
+            border-radius: 12px;
+          }
+          .model-switch.is-txr { left: 0; }
+          .model-switch-circle { opacity: 0.55; }
+          .model-form { align-items: stretch; }
+          .model-title { font-size: 38px; text-align: left; margin-bottom: 12px; }
+          .model-sub, .model-switch-description { font-size: 16px; text-align: left; }
+          .model-icons, .model-form-note { align-self: flex-start; text-align: left; }
+          .model-switch-title { font-size: 36px; }
+          .model-button,
+          .model-demo-btn { width: 100%; }
+        }
+        @media (max-width: 768px) {
+          .model-auth-page { --model-ui-scale: 1; }
+          .model-auth-page {
+            padding: 12px;
+          }
+          .model-main {
+            min-height: 740px;
+            padding: 14px;
+          }
+          .model-container {
+            min-height: 400px;
+            padding: 10px;
+          }
+          .model-switch {
+            min-height: 250px;
+            padding: 24px 16px;
+          }
+          .model-title { font-size: 32px; }
+          .model-switch-title { font-size: 30px; }
+          .model-sub, .model-switch-description { font-size: 14px; }
+        }
+      `}</style>
+
+      <div className="model-main">
+        <div className={`model-container model-a-container ${isSignIn ? "is-txl" : ""}`} id="a-container">
+          <form className="model-form" onSubmit={handleSignUpSubmit}>
+            <h2 className="model-title">Join CBSE Tracker</h2>
+            <p className="model-sub">Create an account and sync study progress live</p>
+            <div className="model-icons" aria-hidden="true">
+              <span className="model-icon">f</span>
+              <span className="model-icon">in</span>
+              <span className="model-icon">t</span>
+            </div>
+            <div className="model-form-note">or use email for registration</div>
+            <input className="model-input model-input-first" type="text" placeholder="Full Name (optional)" />
+            <input
+              className="model-input"
+              type="email"
+              value={email}
+              onChange={(event) => setEmail(event.target.value)}
+              placeholder="Email Address"
+              required
+            />
+            <input
+              className="model-input"
+              type="password"
+              value={password}
+              onChange={(event) => setPassword(event.target.value)}
+              placeholder="Password"
+              required
+            />
+            {authError && !isSignIn ? <div className="model-error">{authError}</div> : null}
+            <button className="model-button" type="submit" disabled={authLoading}>
+              {authLoading && !isSignIn ? "WORKING..." : "SIGN UP"}
+            </button>
+            {!SUPABASE_READY ? (
+              <>
+                <div className="model-demo">
+                  Supabase env vars missing. Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY.
+                </div>
+                <button type="button" className="model-demo-btn" onClick={onDemoMode}>Continue in Demo Mode</button>
+              </>
+            ) : null}
+          </form>
         </div>
 
-        <div style={{ padding: 40, borderRadius: 28, background: "#e8eef5", boxShadow: "8px 8px 20px #c5cee1, -8px -8px 20px #ffffff", transition: "all 0.3s ease" }}>
-          <div style={{ display: "flex", gap: 12, marginBottom: 24 }}>
+        <div className={`model-container model-b-container ${isSignIn ? "is-txl is-z200" : ""}`} id="b-container">
+          <form className="model-form" onSubmit={handleSignInSubmit}>
+            <h2 className="model-title">Track Your Progress</h2>
+            <p className="model-sub">Sign in with your CBSE tracker account</p>
+            <div className="model-icons" aria-hidden="true">
+              <span className="model-icon">f</span>
+              <span className="model-icon">in</span>
+              <span className="model-icon">t</span>
+            </div>
+            <div className="model-form-note">or use your email account</div>
+            <input
+              className="model-input"
+              type="email"
+              value={email}
+              onChange={(event) => setEmail(event.target.value)}
+              placeholder="Email Address"
+              required
+            />
+            <input
+              className="model-input"
+              type="password"
+              value={password}
+              onChange={(event) => setPassword(event.target.value)}
+              placeholder="Password"
+              required
+            />
+            {authError && isSignIn ? <div className="model-error">{authError}</div> : null}
+            <a className="model-link" href="#" onClick={(event) => event.preventDefault()}>
+              Forgot your password?
+            </a>
+            <button className="model-button" type="submit" disabled={authLoading}>
+              {authLoading && isSignIn ? "WORKING..." : "SIGN IN"}
+            </button>
+            {!SUPABASE_READY ? (
+              <>
+                <div className="model-demo">
+                  Supabase env vars missing. Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY.
+                </div>
+                <button type="button" className="model-demo-btn" onClick={onDemoMode}>Continue in Demo Mode</button>
+              </>
+            ) : null}
+          </form>
+        </div>
+
+        <div className={`model-switch ${isSignIn ? "is-txr" : ""}`} id="switch-cnt">
+          <div className={`model-switch-circle ${isSignIn ? "is-txr" : ""}`} />
+          <div className={`model-switch-circle model-switch-circle-t ${isSignIn ? "is-txr" : ""}`} />
+
+          <div className={`model-switch-container ${isSignIn ? "is-hidden" : ""}`} id="switch-c1">
+            <div className="model-brand">CBSE Study Tracker</div>
+            <h2 className="model-switch-title">Welcome Back!</h2>
+            <p className="model-switch-description">
+              Sign in to track and sync your CBSE study progress across all devices.
+            </p>
             <button
+              className="model-button model-switch-button"
               type="button"
               onClick={() => setAuthMode("signIn")}
-              style={{
-                flex: 1,
-                border: "none",
-                borderRadius: 16,
-                padding: "12px 16px",
-                background: authMode === "signIn" ? "#4B70E2" : "#e8eef5",
-                color: authMode === "signIn" ? "#fff" : "#7a8fa6",
-                fontWeight: 700,
-                fontSize: 13,
-                cursor: "pointer",
-                transition: "all 0.3s ease",
-                boxShadow: authMode === "signIn" ? "0 4px 12px rgba(75, 112, 226, 0.3)" : "inset 3px 3px 8px #c5cee1, inset -3px -3px 8px #ffffff",
-              }}
             >
-              Sign in
-            </button>
-            <button
-              type="button"
-              onClick={() => setAuthMode("signUp")}
-              style={{
-                flex: 1,
-                border: "none",
-                borderRadius: 16,
-                padding: "12px 16px",
-                background: authMode === "signUp" ? "#4B70E2" : "#e8eef5",
-                color: authMode === "signUp" ? "#fff" : "#7a8fa6",
-                fontWeight: 700,
-                fontSize: 13,
-                cursor: "pointer",
-                transition: "all 0.3s ease",
-                boxShadow: authMode === "signUp" ? "0 4px 12px rgba(75, 112, 226, 0.3)" : "inset 3px 3px 8px #c5cee1, inset -3px -3px 8px #ffffff",
-              }}
-            >
-              Create account
+              SIGN IN
             </button>
           </div>
 
-          <form onSubmit={onSubmit} style={{ display: "grid", gap: 14 }}>
-            <label style={{ display: "grid", gap: 8, fontSize: 12, fontWeight: 700, color: "#5a6f8a" }}>
-              Email
-              <input
-                type="email"
-                value={email}
-                onChange={(event) => setEmail(event.target.value)}
-                placeholder="you@example.com"
-                style={{
-                  padding: "14px 16px",
-                  borderRadius: 14,
-                  border: "none",
-                  background: "#e8eef5",
-                  color: "#2c3e50",
-                  fontSize: 13,
-                  boxShadow: "inset 4px 4px 10px #c5cee1, inset -4px -4px 10px #ffffff",
-                  transition: "all 0.3s ease",
-                  outline: "none",
-                }}
-                onFocus={(e) => (e.target.style.boxShadow = "inset 4px 4px 10px #c5cee1, inset -4px -4px 10px #ffffff, 0 0 0 3px rgba(75, 112, 226, 0.1)")}
-                onBlur={(e) => (e.target.style.boxShadow = "inset 4px 4px 10px #c5cee1, inset -4px -4px 10px #ffffff")}
-              />
-            </label>
-            <label style={{ display: "grid", gap: 8, fontSize: 12, fontWeight: 700, color: "#5a6f8a" }}>
-              Password
-              <input
-                type="password"
-                value={password}
-                onChange={(event) => setPassword(event.target.value)}
-                placeholder="••••••••"
-                style={{
-                  padding: "14px 16px",
-                  borderRadius: 14,
-                  border: "none",
-                  background: "#e8eef5",
-                  color: "#2c3e50",
-                  fontSize: 13,
-                  boxShadow: "inset 4px 4px 10px #c5cee1, inset -4px -4px 10px #ffffff",
-                  transition: "all 0.3s ease",
-                  outline: "none",
-                }}
-                onFocus={(e) => (e.target.style.boxShadow = "inset 4px 4px 10px #c5cee1, inset -4px -4px 10px #ffffff, 0 0 0 3px rgba(75, 112, 226, 0.1)")}
-                onBlur={(e) => (e.target.style.boxShadow = "inset 4px 4px 10px #c5cee1, inset -4px -4px 10px #ffffff")}
-              />
-            </label>
-
-            {authError ? (
-              <div style={{ padding: 14, borderRadius: 14, background: "#ffe8e8", color: "#c41e1e", fontSize: 12, lineHeight: 1.6, fontWeight: 500 }}>
-                {authError}
-              </div>
-            ) : null}
-
+          <div className={`model-switch-container ${isSignIn ? "" : "is-hidden"}`} id="switch-c2">
+            <div className="model-brand">CBSE Study Tracker</div>
+            <h2 className="model-switch-title">Start Learning!</h2>
+            <p className="model-switch-description">
+              Create your account to track concepts, monitor progress, and sync instantly across devices.
+            </p>
             <button
-              type="submit"
-              disabled={authLoading}
-              style={{
-                border: "none",
-                borderRadius: 14,
-                padding: "14px 16px",
-                background: authLoading ? "#a8c5f0" : "#4B70E2",
-                color: "#fff",
-                fontWeight: 800,
-                fontSize: 13,
-                cursor: authLoading ? "not-allowed" : "pointer",
-                transition: "all 0.3s ease",
-                boxShadow: "0 6px 16px rgba(75, 112, 226, 0.35)",
-                transform: "translateY(0)",
-              }}
-              onMouseDown={(e) => (e.currentTarget.style.transform = "translateY(2px)")}
-              onMouseUp={(e) => (e.currentTarget.style.transform = "translateY(0)")}
-            >
-              {authLoading ? "Working..." : authMode === "signIn" ? "Sign in" : "Create account"}
-            </button>
-          </form>
-
-          {!SUPABASE_READY ? (
-            <div style={{ marginTop: 16, padding: 14, borderRadius: 14, background: "#fef5e8", color: "#8b5c00", fontSize: 12, lineHeight: 1.6 }}>
-              Supabase env vars not set. Try demo mode or configure <code style={{ fontFamily: "monospace", fontSize: 11 }}>VITE_SUPABASE_URL</code> and <code style={{ fontFamily: "monospace", fontSize: 11 }}>VITE_SUPABASE_ANON_KEY</code>.
-            </div>
-          ) : null}
-
-          {!SUPABASE_READY ? (
-            <button
+              className="model-button model-switch-button"
               type="button"
-              onClick={onDemoMode}
-              style={{
-                marginTop: 14,
-                width: "100%",
-                border: "none",
-                borderRadius: 14,
-                padding: "13px 16px",
-                background: "#e8eef5",
-                color: "#4B70E2",
-                fontWeight: 700,
-                fontSize: 13,
-                cursor: "pointer",
-                transition: "all 0.3s ease",
-                boxShadow: "inset 3px 3px 8px #c5cee1, inset -3px -3px 8px #ffffff",
-              }}
-              onMouseEnter={(e) => (e.currentTarget.style.boxShadow = "0 4px 12px rgba(75, 112, 226, 0.2)")}
-              onMouseLeave={(e) => (e.currentTarget.style.boxShadow = "inset 3px 3px 8px #c5cee1, inset -3px -3px 8px #ffffff")}
+              onClick={() => setAuthMode("signUp")}
             >
-              Continue in demo mode
+              CREATE ACCOUNT
             </button>
-          ) : null}
+          </div>
         </div>
       </div>
     </div>
