@@ -1158,6 +1158,8 @@ export default function App() {
   const [activeSubject, setActiveSubject] = useState(null);
   const [expandedChapter, setExpandedChapter] = useState(null);
   const [studyLog, setStudyLog] = useState([]);
+  const [syncError, setSyncError] = useState("");
+  const [syncPendingCount, setSyncPendingCount] = useState(0);
   const [view, setView] = useState("dashboard"); // dashboard | subject | schedule
   const [loaded, setLoaded] = useState(false);
   const isRemoteMode = Boolean(supabase && session && !demoMode);
@@ -1207,10 +1209,12 @@ export default function App() {
           time: row.created_at,
         }))
       );
+      setSyncError("");
     } catch (error) {
       console.error("Failed to load remote study data", error);
       setStatuses({});
       setStudyLog([]);
+      setSyncError(error?.message || "Failed to load study data from Supabase.");
       setAuthError("Connected to Supabase, but the study tables could not be loaded. Check the SQL schema setup.");
     } finally {
       setLoaded(true);
@@ -1299,6 +1303,19 @@ export default function App() {
     };
   }, [activeUserId, isRemoteMode]);
 
+  useEffect(() => {
+    if (!isRemoteMode) return;
+
+    const onBeforeUnload = (event) => {
+      if (syncPendingCount <= 0) return;
+      event.preventDefault();
+      event.returnValue = "Study progress is still syncing. Are you sure you want to leave?";
+    };
+
+    window.addEventListener("beforeunload", onBeforeUnload);
+    return () => window.removeEventListener("beforeunload", onBeforeUnload);
+  }, [isRemoteMode, syncPendingCount]);
+
   const handleAuthSubmit = async (event) => {
     event.preventDefault();
 
@@ -1334,6 +1351,7 @@ export default function App() {
     setDemoMode(true);
     setSession(null);
     setAuthError("");
+    setSyncError("");
     setLoaded(false);
   };
 
@@ -1346,56 +1364,60 @@ export default function App() {
     setLoaded(false);
     setStatuses({});
     setStudyLog([]);
+    setSyncError("");
     setView("dashboard");
     setActiveSubject(null);
     setExpandedChapter(null);
   };
 
   const cycleStatus = async (key) => {
-    let nextStatus = "not_started";
-    let entry = null;
+    const curr = statuses[key] || "not_started";
+    const idx = STATUS_ORDER.indexOf(curr);
+    const nextStatus = STATUS_ORDER[(idx + 1) % STATUS_ORDER.length];
+    const entry = {
+      key,
+      from: curr,
+      to: nextStatus,
+      time: new Date().toISOString(),
+    };
 
-    setStatuses((prev) => {
-      const curr = prev[key] || "not_started";
-      const idx = STATUS_ORDER.indexOf(curr);
-      nextStatus = STATUS_ORDER[(idx + 1) % STATUS_ORDER.length];
-      entry = {
-        key,
-        from: curr,
-        to: nextStatus,
-        time: new Date().toISOString(),
-      };
-      return { ...prev, [key]: nextStatus };
-    });
-
-    if (entry) {
-      setStudyLog((logs) => [entry, ...logs].slice(0, 200));
-    }
+    setStatuses((prev) => ({ ...prev, [key]: nextStatus }));
+    setStudyLog((logs) => [entry, ...logs].slice(0, 200));
 
     if (isRemoteMode && activeUserId && supabase && entry) {
-      const [progressResult, activityResult] = await Promise.all([
-        supabase.from("study_progress").upsert(
-          {
+      setSyncPendingCount((count) => count + 1);
+      try {
+        const [progressResult, activityResult] = await Promise.all([
+          supabase.from("study_progress").upsert(
+            {
+              user_id: activeUserId,
+              concept_key: key,
+              status: nextStatus,
+              updated_at: new Date().toISOString(),
+            },
+            { onConflict: "user_id,concept_key" }
+          ),
+          supabase.from("study_activity").insert({
             user_id: activeUserId,
             concept_key: key,
-            status: nextStatus,
-            updated_at: new Date().toISOString(),
-          },
-          { onConflict: "user_id,concept_key" }
-        ),
-        supabase.from("study_activity").insert({
-          user_id: activeUserId,
-          concept_key: key,
-          from_status: entry.from,
-          to_status: entry.to,
-        }),
-      ]);
+            from_status: entry.from,
+            to_status: entry.to,
+          }),
+        ]);
 
-      if (progressResult.error) {
-        console.error(progressResult.error);
-      }
-      if (activityResult.error) {
-        console.error(activityResult.error);
+        if (progressResult.error) {
+          console.error(progressResult.error);
+          setSyncError(progressResult.error.message || "Could not save progress to Supabase.");
+        }
+        if (activityResult.error) {
+          console.error(activityResult.error);
+          setSyncError(activityResult.error.message || "Could not save activity to Supabase.");
+        }
+        if (!progressResult.error && !activityResult.error) {
+          setSyncError("");
+        }
+      } finally {
+        setSyncPendingCount((count) => Math.max(0, count - 1));
       }
     }
   };
@@ -1409,10 +1431,16 @@ export default function App() {
     setStudyLog([]);
 
     if (isRemoteMode && activeUserId && supabase) {
-      await Promise.all([
+      const [progressDelete, activityDelete] = await Promise.all([
         supabase.from("study_progress").delete().eq("user_id", activeUserId),
         supabase.from("study_activity").delete().eq("user_id", activeUserId),
       ]);
+
+      if (progressDelete.error || activityDelete.error) {
+        setSyncError(progressDelete.error?.message || activityDelete.error?.message || "Could not reset data in Supabase.");
+      } else {
+        setSyncError("");
+      }
     }
   };
 
@@ -1474,6 +1502,19 @@ export default function App() {
         authLoading={authLoading}
         authError={authError}
       />
+    );
+  }
+
+  if (!loaded) {
+    return (
+      <div style={{ minHeight: "100vh", display: "grid", placeItems: "center", background: "var(--bg)", color: "var(--text)" }}>
+        <div style={{ textAlign: "center" }}>
+          <div style={{ fontSize: 16, fontWeight: 700 }}>Loading your study data...</div>
+          <div style={{ fontSize: 13, color: "var(--text-secondary)", marginTop: 8 }}>
+            Pulling your latest progress from Supabase.
+          </div>
+        </div>
+      </div>
     );
   }
 
@@ -1576,6 +1617,11 @@ export default function App() {
               <div style={{ fontSize: 28, fontWeight: 700, fontFamily: "'JetBrains Mono', monospace", color: "#60a5fa" }}>{daysLeft}</div>
               <div style={{ fontSize: 10, color: "#94a3b8", textTransform: "uppercase", letterSpacing: 1 }}>days to boards</div>
               <div style={{ marginTop: 10, display: "flex", justifyContent: "flex-end", gap: 8, alignItems: "center" }}>
+                {isRemoteMode && syncPendingCount > 0 ? (
+                  <span style={{ fontSize: 10, color: "#fde68a", background: "rgba(245,158,11,0.2)", padding: "6px 8px", borderRadius: 999 }}>
+                    Syncing...
+                  </span>
+                ) : null}
                 <span style={{ fontSize: 10, color: "#cbd5e1", background: "rgba(255,255,255,0.08)", padding: "6px 8px", borderRadius: 999 }}>
                   {demoMode ? "Demo mode" : session?.user?.email || "Signed in"}
                 </span>
@@ -1612,6 +1658,23 @@ export default function App() {
         <button style={styles.navBtn(view === "subject")} onClick={() => { if (!activeSubject) setActiveSubject("Mathematics"); setView("subject"); }}>Subjects</button>
         <button style={styles.navBtn(view === "schedule")} onClick={() => setView("schedule")}>Schedule</button>
       </div>
+
+      {syncError && isRemoteMode ? (
+        <div
+          style={{
+            margin: "10px 16px 0",
+            borderRadius: 10,
+            border: "1px solid #fecaca",
+            background: "#fff1f2",
+            color: "#9f1239",
+            padding: "10px 12px",
+            fontSize: 12,
+            fontWeight: 600,
+          }}
+        >
+          Supabase sync error: {syncError}
+        </div>
+      ) : null}
 
       {/* Dashboard View */}
       {view === "dashboard" && (

@@ -10,6 +10,8 @@ create table if not exists public.study_progress (
 
 alter table public.study_progress enable row level security;
 
+drop policy if exists "Users can manage their own progress" on public.study_progress;
+
 create policy "Users can manage their own progress"
 on public.study_progress
 for all
@@ -27,8 +29,14 @@ create table if not exists public.study_activity (
 
 alter table public.study_activity enable row level security;
 
+drop policy if exists "Users can manage their own activity" on public.study_activity;
+
 create policy "Users can manage their own activity"
 on public.study_activity
 for all
 using (auth.uid() = user_id)
 with check (auth.uid() = user_id);
+
+grant usage on schema public to authenticated;
+grant select, insert, update, delete on table public.study_progress to authenticated;
+grant select, insert, update, delete on table public.study_activity to authenticated;
